@@ -11,9 +11,9 @@ import ToolBar from "./toolbar/ToolBar";
 import UserList from "./UserList";
 
 const Room = () => {
-  const room = useRoom();
+  // const room = useRoom();
 
-  if (!room.id) return <NameInput />;
+  // if (!room.id) return <NameInput />;
 
   return (
     <RoomContextProvider>
