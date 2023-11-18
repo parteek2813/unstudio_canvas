@@ -7,18 +7,19 @@ import next, { NextApiHandler } from "next";
 import { Server } from "socket.io";
 import { v4 } from "uuid";
 
-const port = parseInt(process.env.PORT || "3000", 10);
+// const port = parseInt(process.env.PORT || "3000", 10);
 const dev = process.env.NODE_ENV !== "production";
-const nextApp = next({ dev });
-const nextHandler: NextApiHandler = nextApp.getRequestHandler();
+const app = next({ dev });
+const nextHandler: NextApiHandler = app.getRequestHandler();
 
-nextApp.prepare().then(async () => {
-  const app = express();
-  const server = createServer(app);
+app.prepare().then(async () => {
+  const server = express();
+  // const server = createServer(app);
 
-  const io = new Server<ClientToServerEvents, ServerToClientEvents>(server);
+  const httpserver = createServer(server);
+  const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpserver);
 
-  app.get("/health", async (_, res) => {
+  server.get("/health", async (_, res) => {
     res.send("Healthy");
   });
 
@@ -62,9 +63,11 @@ nextApp.prepare().then(async () => {
     };
 
     socket.on("create_room", (username) => {
+      console.log("Reached into create_room in index.ts");
       let roomId: string;
       do {
         roomId = Math.random().toString(36).substring(2, 6);
+        console.log("Reached into create_room in index.ts");
       } while (rooms.has(roomId));
 
       socket.join(roomId);
@@ -162,10 +165,10 @@ nextApp.prepare().then(async () => {
     });
   });
 
-  app.all("*", (req: any, res: any) => nextHandler(req, res));
+  server.all("*", (req: any, res: any) => nextHandler(req, res));
 
-  server.listen(port, () => {
+  httpserver.listen(process.env.PORT || 3000, () => {
     // eslint-disable-next-line no-console
-    console.log(`> Ready on http://localhost:${port}`);
+    console.log(`> Ready on http://localhost:${process.env.PORT || 3000}`);
   });
 });
